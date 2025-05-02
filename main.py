@@ -19,8 +19,11 @@ def randClip(folder, duration):
 
 def randBackground(duration):
     video = randClip("video", duration)
+    video = video.filter("scale", 1920, 1080).crop(420, 0, 960, 1080).filter("scale", 1080, 1920)
+
     audio = randClip("audio", duration)
+
     stream = ffmpeg.output(audio, video, "output.mp4")
     ffmpeg.run(stream, overwrite_output=True)
 
-randBackground(1)
+randBackground(10)
