@@ -1,10 +1,13 @@
-import ffmpeg
 import random
+import os
+import inspect
 
-def randFile(path):
-    return random.choice(os.listdir(path))
+import ffmpeg
+
+def randFile(folder):
+    path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda:0))) + "/" + folder
+    return path + "/" + random.choice(os.listdir(path))
 
 stream = ffmpeg.input(randFile("video"))
-stream = ffmpeg.hflip(stream)
-stream = ffmpeg.output(stream, 'output.mp4')
+stream = ffmpeg.output(stream, "output.mp4")
 ffmpeg.run(stream)
