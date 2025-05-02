@@ -2,6 +2,7 @@ import random
 import os
 import inspect
 import datetime
+import math
 
 import ffmpeg
 import ffmpeg.video
@@ -22,6 +23,7 @@ def randBackground(duration):
     video = video.filter("scale", 1920, 1080).crop(420, 0, 960, 1080).filter("scale", 1080, 1920)
 
     audio = randClip("audio", duration)
+    audio = audio.filter("loudnorm").filter("volume", 0.05 + 20 * math.exp(-1000 * random.random() ** 2))
 
     stream = ffmpeg.output(audio, video, "output.mp4")
     ffmpeg.run(stream, overwrite_output=True)
