@@ -1,3 +1,22 @@
+MODEL = "qwen3"
+PROMPT = """
+Generate a script for a brainrot youtube video.
+Make sure to use the exact form:
+
+<title>VIDEO TITLE HERE</title>
+<tags>CSV TAGS HERE</tags>
+<speech>CONTENT HERE</speech>
+
+You must only include speech read to the user in the speech tag. The video will show a random background footage and captions. Here is an example:
+
+<title>Skibidi Ohio Rizz</title>
+<tags>#brainrot,#skibidi</tags>
+<speech>My great grandfather once said, you bite not hand not that then what feed. Great word once spoke.</speech>
+
+Here the humour comes from not understanding the speech. In each instance, formulate a plan that makes it unexpected.
+You should not only rely on the same type of humour, as it becomes repetivie. Formulate your own idea for humour.
+"""
+
 import random
 import os
 import inspect
@@ -5,7 +24,7 @@ import datetime
 import math
 
 import ffmpeg
-import ffmpeg.video
+import ollama
 
 def randFile(folder):
     path = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda:0))) + "/" + folder
@@ -28,4 +47,14 @@ def randBackground(duration):
     stream = ffmpeg.output(audio, video, "output.mp4")
     ffmpeg.run(stream, overwrite_output=True)
 
-randBackground(10)
+def genScript():
+    response = ollama.chat(model=MODEL, messages=[
+    {
+        "role": "user",
+        "content": PROMPT,
+    },
+    ])
+    text = response['message']['content'].split("</think>\n\n")[1]
+    return text
+
+print(genScript())
