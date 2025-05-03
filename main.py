@@ -83,4 +83,19 @@ def speak(text):
     with open("audio.wav", "wb") as file:
         file.write(response)
 
-speak("Hi!")
+def brainrot(text):
+    # speak(text)
+    duration = ffmpeg.probe("audio.wav")["streams"][0]["duration"]
+
+    randBackground(math.floor(float(duration)) + 2)
+
+    stream = ffmpeg.input("background.mp4")
+    video = stream.video
+    audio = stream.audio
+    speech = ffmpeg.input("audio.wav")
+    audio = ffmpeg.filter([audio, speech], "amix")
+
+    stream = ffmpeg.output(video, audio, "output.mp4", **{'c:v': 'copy', 'c:a': 'aac'})
+    ffmpeg.run(stream, overwrite_output=True)
+
+brainrot("Whats going on guys!")
