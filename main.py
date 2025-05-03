@@ -84,9 +84,11 @@ def speak(text):
         file.write(response)
 
 def brainrot(text):
-    # speak(text)
+    print("Requesting voice clone from site")
+    speak(text)
     duration = ffmpeg.probe("audio.wav")["streams"][0]["duration"]
 
+    print("Generating brainrot background")
     randBackground(math.floor(float(duration)) + 2)
 
     stream = ffmpeg.input("background.mp4")
@@ -98,4 +100,4 @@ def brainrot(text):
     stream = ffmpeg.output(video, audio, "output.mp4", **{'c:v': 'copy', 'c:a': 'aac'})
     ffmpeg.run(stream, overwrite_output=True)
 
-brainrot("Whats going on guys!")
+brainrot("You have some source video that's already got audio in it, and you want to mix in a particular snippet of audio at a particular time.")
