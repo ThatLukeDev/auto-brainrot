@@ -22,6 +22,9 @@ import os
 import inspect
 import datetime
 import math
+import requests
+import uuid
+import time
 
 import ffmpeg
 import ollama
@@ -44,7 +47,7 @@ def randBackground(duration):
     audio = randClip("audio", duration)
     audio = audio.filter("loudnorm").filter("volume", 0.05 + 20 * math.exp(-1000 * random.random() ** 2))
 
-    stream = ffmpeg.output(audio, video, "output.mp4")
+    stream = ffmpeg.output(audio, video, "background.mp4")
     ffmpeg.run(stream, overwrite_output=True)
 
 def genScript():
@@ -57,4 +60,27 @@ def genScript():
     text = response['message']['content'].split("</think>\n\n")[1]
     return text
 
-print(genScript())
+def speak(text):
+    response = requests.post("https://api.fakeyou.com/tts/inference", json = {
+        "inference_text": text,
+        "tts_model_token": "weight_3k28fws0v6r1ke3p0w0vw48gm",
+        "uuid_idempotency_token": str(uuid.uuid4())
+    }).json()
+
+    if response["success"] == False:
+        return
+
+    token = response["inference_job_token"]
+
+    for i in range(1, 30):
+        time.sleep(i)
+        response = requests.get("https://api.fakeyou.com/v1/model_inference/job_status/" + token).json()
+        if response["state"]["status"]["progress_percentage"] == 100:
+            break
+
+    response = requests.get(response["state"]["maybe_result"]["media_links"]["cdn_url"]).content
+
+    with open("audio.wav", "wb") as file:
+        file.write(response)
+
+speak("Hi!")
