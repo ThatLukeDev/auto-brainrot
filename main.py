@@ -90,27 +90,41 @@ def genScript():
     return [title, tags, text, VOICES[voice]]
 
 def speak(text, voice):
-    response = requests.post("https://api.fakeyou.com/tts/inference", json = {
-        "inference_text": text,
-        "tts_model_token": voice,
-        "uuid_idempotency_token": str(uuid.uuid4())
-    }).json()
+    x = 0
+    for line in text.split("."):
+        print("Generating sentence", x, "as", line)
+        response = requests.post("https://api.fakeyou.com/tts/inference", json = {
+            "inference_text": line,
+            "tts_model_token": voice,
+            "uuid_idempotency_token": str(uuid.uuid4())
+        }).json()
 
-    if response["success"] == False:
-        return
+        if response["success"] == False:
+            return
 
-    token = response["inference_job_token"]
+        token = response["inference_job_token"]
 
-    for i in range(1, 30):
-        time.sleep(i)
-        response = requests.get("https://api.fakeyou.com/v1/model_inference/job_status/" + token).json()
-        if response["state"]["status"]["progress_percentage"] == 100:
-            break
+        for i in range(1, 30):
+            time.sleep(i)
+            response = requests.get("https://api.fakeyou.com/v1/model_inference/job_status/" + token).json()
+            if response["state"]["status"]["progress_percentage"] == 100:
+                break
 
-    response = requests.get(response["state"]["maybe_result"]["media_links"]["cdn_url"]).content
+        response = requests.get(response["state"]["maybe_result"]["media_links"]["cdn_url"]).content
 
-    with open("audio.wav", "wb") as file:
-        file.write(response)
+        with open("audio_split" + str(x) + ".wav", "wb") as file:
+            file.write(response)
+        x += 1
+
+    print("Combining audios")
+    audios = []
+    for j in range(0, 2):
+        audios.append(ffmpeg.input("audio_split" + str(j) + ".wav"))
+
+    stream = ffmpeg.concat(*audios, v=0, a=1)
+
+    stream = ffmpeg.output(stream, "audio.wav")
+    ffmpeg.run(stream, overwrite_output=True)
 
 def brainrot(text, voice):
     print("Recieved", text, "in the voice of ", voice)
