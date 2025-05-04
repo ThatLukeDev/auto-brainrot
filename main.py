@@ -12,10 +12,33 @@ You must only include speech read to the user in the speech tag. The video will 
 <title>Skibidi Ohio Rizz</title>
 <tags>#brainrot,#skibidi</tags>
 <speech>My great grandfather once said, you bite not hand not that then what feed. Great word once spoke.</speech>
+<voice>WalterWhite</voice>
 
 Here the humour comes from not understanding the speech. In each instance, formulate a plan that makes it unexpected.
 You should not only rely on the same type of humour, as it becomes repetivie. Formulate your own idea for humour.
+
+Your choice for voices includes:
+Frieza
+WalterWhite
+RickSanchez
+SouthParkChef
+Cartman
+IShowSpeed
+HomerSimpson
+BartSimpson
+
+Make sure the voice chosen is exact.
 """
+VOICES = {
+    "Frieza": "weight_008qff62ezjjcddtzvf0x3wzc",
+    "WalterWhite": "weight_0bsxzrwp6p77t67s8dcn607wf",
+    "RickSanchez": "weight_0f762jdzgsy1dhpb86qxy4ssm",
+    "SouthParkChef": "weight_0rrj46ve6jgjdjs2tmtkvzn04",
+    "Cartman": "weight_3k28fws0v6r1ke3p0w0vw48gm",
+    "IShowSpeed": "weight_msq6440ch8hj862nz5y255n8j",
+    "HomerSimpson": "weight_zw97bw3hbtm07qwkd2exna15b",
+    "BartSimpson": "weight_jmcdwfk7nzmem4a2f5h7bq0y0",
+}
 
 import random
 import os
@@ -63,12 +86,13 @@ def genScript():
     title = regex.sub(r"(.|\n)*?<title>((.|\n).+?)</title>(.|\n)*", r"\2", response, regex.M)
     tags = regex.sub(r"(.|\n)*?<tags>((.|\n)+?)</tags>(.|\n)*", r"\2", response, regex.M).split(",")
     text = regex.sub(r"(.|\n)*?<speech>((.|\n)+?)</speech>(.|\n)*", r"\2", response, regex.M)
-    return [title, tags, text]
+    voice = regex.sub(r"(.|\n)*?<voice>((.|\n)+?)</voice>(.|\n)*", r"\2", response, regex.M)
+    return [title, tags, text, VOICES[voice]]
 
-def speak(text):
+def speak(text, voice):
     response = requests.post("https://api.fakeyou.com/tts/inference", json = {
         "inference_text": text,
-        "tts_model_token": "weight_3k28fws0v6r1ke3p0w0vw48gm",
+        "tts_model_token": voice,
         "uuid_idempotency_token": str(uuid.uuid4())
     }).json()
 
@@ -88,9 +112,11 @@ def speak(text):
     with open("audio.wav", "wb") as file:
         file.write(response)
 
-def brainrot(text):
+def brainrot(text, voice):
+    print("Recieved", text, "in the voice of ", voice)
+
     print("Requesting voice clone from site")
-    speak(text)
+    speak(text, voice)
     duration = ffmpeg.probe("audio.wav")["streams"][0]["duration"]
 
     print("Generating brainrot background")
@@ -107,4 +133,4 @@ def brainrot(text):
 
 text = genScript()
 
-brainrot(text[2])
+brainrot(text[2], text[3])
