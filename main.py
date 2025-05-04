@@ -92,6 +92,8 @@ def genScript():
 def speak(text, voice):
     x = 0
     for line in text.split("."):
+        if len(line) == 0:
+            break
         print("Generating sentence", x, "as", line)
         response = requests.post("https://api.fakeyou.com/tts/inference", json = {
             "inference_text": line,
