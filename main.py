@@ -25,6 +25,7 @@ import math
 import requests
 import uuid
 import time
+import regex
 
 import ffmpeg
 import ollama
@@ -51,14 +52,18 @@ def randBackground(duration):
     ffmpeg.run(stream, overwrite_output=True)
 
 def genScript():
+    print("Generating script from ollama")
     response = ollama.chat(model=MODEL, messages=[
     {
         "role": "user",
         "content": PROMPT,
     },
     ])
-    text = response['message']['content'].split("</think>\n\n")[1]
-    return text
+    response = response['message']['content'].split("</think>\n\n")[1]
+    title = regex.sub(r"(.|\n)*?<title>((.|\n).+?)</title>(.|\n)*", r"\2", response, regex.M)
+    tags = regex.sub(r"(.|\n)*?<tags>((.|\n)+?)</tags>(.|\n)*", r"\2", response, regex.M).split(",")
+    text = regex.sub(r"(.|\n)*?<speech>((.|\n)+?)</speech>(.|\n)*", r"\2", response, regex.M)
+    return [title, tags, text]
 
 def speak(text):
     response = requests.post("https://api.fakeyou.com/tts/inference", json = {
@@ -100,4 +105,6 @@ def brainrot(text):
     stream = ffmpeg.output(video, audio, "output.mp4", **{'c:v': 'copy', 'c:a': 'aac'})
     ffmpeg.run(stream, overwrite_output=True)
 
-brainrot("You have some source video that's already got audio in it, and you want to mix in a particular snippet of audio at a particular time.")
+text = genScript()
+
+brainrot(text[2])
