@@ -116,9 +116,10 @@ def speak(text, voice):
             file.write(response)
         x += 1
 
+    iime.sleep(1)
     print("Combining audios")
     audios = []
-    for j in range(0, 2):
+    for j in range(0, x):
         audios.append(ffmpeg.input("audio_split" + str(j) + ".wav"))
 
     stream = ffmpeg.concat(*audios, v=0, a=1)
@@ -131,6 +132,7 @@ def brainrot(text, voice):
 
     print("Requesting voice clone from site")
     speak(text, voice)
+    time.sleep(1)
     duration = ffmpeg.probe("audio.wav")["streams"][0]["duration"]
 
     print("Generating brainrot background")
