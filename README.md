@@ -2,5 +2,4 @@
 
 Automatically makes short-form video content independantly.
 
-https://github.com/user-attachments/assets/a489e257-13d9-4c0f-a185-881f95df1582
-
+https://github.com/user-attachments/assets/a8e2f723-a33e-4e00-9251-fa429d0778fe
